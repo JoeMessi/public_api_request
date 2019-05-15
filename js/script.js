@@ -1,7 +1,21 @@
 
+// selects the div where we'll show people's profiles
+const gallery = document.getElementById('gallery');
+
+// cards html collection
+const cards = gallery.children;
+
 // selects the div that contains the search form
 const searchDiv = document.querySelector('.search-container');
 
+// array of objects that will hold the data we're interested about the profiles fetched from the api
+// each object represent a profile
+const peopleArray = [];
+
+// counter variable used in the logic for displaying previous and next modal window
+let index;
+
+// form markup in a template literal
 const html = `
     <form action="#" method="get">
       <input type="search" id="search-input" class="search-input" placeholder="Search...">
@@ -9,32 +23,19 @@ const html = `
     </form>
 `;
 
+// adding the form markup to the page
 searchDiv.innerHTML = html;
-
-
-
-
-
-
-// selects the div where we'll show the people's profiles
-const gallery = document.getElementById('gallery');
-// cards html collection
-const cards = gallery.children;
-
-// will store the array of data fetched (references for the modal window)
-//let arrPeople = [];
-
 
 
 // fetching from the API
 fetch('https://randomuser.me/api/?results=12&nat=gb')
- .then(checkStatus)
- .then(res => res.json())
- .then(data => {
+  .then(checkStatus)  // checkStatus checks for http request errors
+  .then(res => res.json())  // decoding the json http response
+  .then(data => {
     // display people on page
     displayPeople(data.results);
-    // array of people
-    pushToObj(data.results);
+    // peopleArrayay of people
+    pushInfo(data.results);
     // ----
     appendModal();
  })
@@ -56,7 +57,7 @@ fetch('https://randomuser.me/api/?results=12&nat=gb')
 const displayPeople = (data) => {
   const people = data.map((person, index) =>
     `
-    <div class="card" id='${person.name.first}_${person.name.last}'>
+    <div class="card" name='${person.name.first}_${person.name.last}' id='index${index}'>
         <div class="card-img-container">
             <img class="card-img" src="${person.picture.large}" alt="profile picture">
         </div>
@@ -73,26 +74,24 @@ const displayPeople = (data) => {
 
 
 
-const arr = [];
 
-function pushToObj(data) {
+// this push all the info we need about each profile into the array 'peopleArray'
+function pushInfo(data) {
   data.forEach((item) => {
-    const obj = {};
-    obj[item.name.first+'_'+item.name.last] = {
-      image: item.picture.large,
-      first_name: item.name.first ,
-      last_name: item.name.last ,
-      email: item.email ,
-      cell_num: item.phone,
-      city: item.location.city,
-      state: item.location.state,
-      address: item.location.street,
-      postcode: item.location.postcode,
-      birthday: item.dob.date // make it shorter (only date)
-       }
-      arr.push(obj);
+     const obj = {
+       image: item.picture.large,
+       first_name: item.name.first ,
+       last_name: item.name.last ,
+       email: item.email ,
+       cell_num: item.phone,
+       city: item.location.city,
+       state: item.location.state,
+       address: item.location.street,
+       postcode: item.location.postcode,
+       birthday: item.dob.date
+     }
+  peopleArray.push(obj);
   })
-  //console.log(arr);
 }
 
 
@@ -105,18 +104,52 @@ function appendModal() {
 for(let i = 0; i < cards.length; i++) {
   cards[i].addEventListener('click', () => {
     // id of the clicked card person
-    const id_name = cards[i].id;
+    const personIndex = cards[i].id.substr(5);
 
-    for(person of arr) {
+    for(person of peopleArray) {
       // looks for the match
-      if(person.hasOwnProperty(id_name)) {
+      if(peopleArray.indexOf(person) === parseInt(personIndex)) {
+
+        index = peopleArray.indexOf(person);
+
         // call modalTemplate on the matched person
-        modalTemplate(person[id_name]);
+        modalTemplate(person);
       }
     }
   }); // end click
 } // end loop
-} // end modalWindow / no need for a function here, i think, this is kinda of a function for the delay
+} // end modalWindow
+
+
+
+  //PREV and NEXT card modal window
+
+  document.addEventListener('click', (event) => {
+    if(event.target.id === 'modal-prev') {
+      if(index > 0) {
+      // removes current modal
+      document.querySelector('.modal-container').remove();
+      // add new one
+      modalTemplate(peopleArray[index - 1]);
+      //update index
+      index -= 1;
+      }
+    }
+  });
+
+  document.addEventListener('click', (event) => {
+    if(event.target.id === 'modal-next') {
+      if(index < peopleArray.length-1) {
+      // removes current modal
+      document.querySelector('.modal-container').remove();
+      // add new one
+      modalTemplate(peopleArray[index + 1]);
+      //update index
+      index += 1;
+      }
+    }
+  });
+
 
 
 
@@ -136,7 +169,12 @@ function modalTemplate(person) {
               <p class="modal-text">${person.cell_num}</p>
               <p class="modal-text">${person.address}, ${person.state}, ${person.postcode}</p>
               <p class="modal-text">Birthday: ${person.birthday.slice(0,10)}</p>
-         </div>
+          </div>
+       </div>
+       <div class="modal-btn-container">
+           <button type="button" id="modal-prev" class="modal-prev btn">Prev</button>
+           <button type="button" id="modal-next" class="modal-next btn">Next</button>
+       </div>
   `;
    outerDiv.innerHTML = html;
    gallery.insertAdjacentElement('afterend', outerDiv);
@@ -146,7 +184,9 @@ function modalTemplate(person) {
    button.addEventListener('click', () => {
      outerDiv.remove();
    })
-}
+
+} // end modalTemplate
+
 
 
 
@@ -163,7 +203,9 @@ const submit = document.querySelector('#serach-submit');
 // function that hides/shows cards that match the search input value
 function showHide() {
   for(card of cards) {
-    if(card.id.includes(searchField.value.toLowerCase())) {
+    const name = card.getAttribute('name');
+
+    if(name.includes(searchField.value.toLowerCase())) {
       card.style.display = '';
     }else{
       card.style.display = 'none';
@@ -181,17 +223,3 @@ form.addEventListener('submit', (event) => {
 searchField.addEventListener('keyup', () => {
  showHide();
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ----
