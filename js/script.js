@@ -68,8 +68,6 @@ fetch('https://randomuser.me/api/?results=12&nat=gb') // fetching from the API
  }
 
 
-// HERE ----------------
-
 // function that display people's cards on the page
 // the argument of the 'data' parameter will be the array of objects
 // we created from the data fetched from the api (peopleArray)
@@ -92,8 +90,7 @@ function displayPeople(data)  {
 }
 
 
-
-// displays a modal window of the person's card clicked on the page
+// displays a modal window of the person's card clicked
 function appendModal() {
 
   // looping through all cards I assign a 'click' event listener to all of them
@@ -129,8 +126,6 @@ function appendModal() {
 }; // end modalWindow
 
 
-
-
 // given a person object as argument, it creates and appends a modal window to the page
 function modalTemplate(person) {
   const outerDiv = document.createElement('div');
@@ -164,7 +159,6 @@ function modalTemplate(person) {
    })
 
 } // end modalTemplate
-
 
 
 // 'click' event listener on the document to check when the 'PREV' and 'NEXT' buttons
@@ -206,7 +200,6 @@ document.addEventListener('click', (event) => {
     }
   }
 });
-
 
 
 // ----- search form ------
