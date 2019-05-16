@@ -219,6 +219,7 @@ header h1 {
 
 .cell, .address, .birthday {
 		 font-size: 15px;
+		 text-transform: capitalize;
 	}
 
 

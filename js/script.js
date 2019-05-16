@@ -11,7 +11,6 @@ const peopleArray = [];
 // counter variable used in the logic for displaying previous and next modal window
 let index;
 
-
 // form markup in a template literal
 const html = `
     <form action="#" method="get">
@@ -65,6 +64,7 @@ fetch('https://randomuser.me/api/?results=12&nat=gb') // fetching from the API
       }
       peopleArray.push(obj);
     })
+    console.log(peopleArray); // to delete
  }
 
 
@@ -139,9 +139,9 @@ function modalTemplate(person) {
               <p class="modal-text email">${person.email}</p>
               <p class="modal-text cap city">${person.city}</p>
               <hr>
-              <p class="modal-text cell">${person.cell_num}</p>
+              <p class="modal-text cell">${formatTelephone(person.cell_num)}</p>
               <p class="modal-text address">${person.address}, ${person.state}, ${person.postcode}</p>
-              <p class="modal-text birthday">Birthday: ${person.birthday.slice(0,10)}</p>
+              <p class="modal-text birthday">Birthday: ${formatBDay(person.birthday.slice(2,10))}</p>
           </div>
        </div>
        <div class="modal-btn-container">
@@ -159,6 +159,19 @@ function modalTemplate(person) {
    })
 
 } // end modalTemplate
+
+
+// formats the person's birthday for the modal window
+function formatBDay(text) {
+  const regex = /^(\d{2})-(\d{2})-(\d{2})$/;
+  return text.replace(regex, '$3/$2/$1');
+}
+
+// formats the person's phone number for the modal window
+function formatTelephone(text) {
+  const regex = /^(\d{3})(\d{3})(\d*)$/;
+  return text.split(' ').join('').replace(regex, '($1) $2-$3');
+}
 
 
 // 'click' event listener on the document to check when the 'PREV' and 'NEXT' buttons
